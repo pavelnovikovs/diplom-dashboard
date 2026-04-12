@@ -70,35 +70,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    let currentDetailedText = "";
+    let currentReportData = null;
     let typeWriterInterval;
 
     const modal = document.getElementById('ai_modal');
     const btnClose = document.getElementById('btn_close_modal');
     const tw = document.getElementById('modal_typewriter');
 
-    document.getElementById('btn_detailed_analysis').addEventListener('click', () => {
-        // Открытие модалки
+    document.getElementById('btn_detailed_analysis').addEventListener('click', async () => {
+        if (!currentReportData) return;
+
+        // Открываем модальное окно сразу
         modal.style.display = 'flex';
-        // forced reflow для анимации opacity
         void modal.offsetWidth;
         modal.classList.add('show');
-        
-        tw.innerHTML = '';
-        let i = 0;
+        tw.innerHTML = '⏳ Нейросеть анализирует данные... Пожалуйста, подождите 5-10 секунд.';
         clearInterval(typeWriterInterval);
-        
-        // Звук печатной машинки
-        typeWriterInterval = setInterval(() => {
-            if(i < currentDetailedText.length) {
-                const char = currentDetailedText.charAt(i);
-                tw.innerHTML += char === '\n' ? '<br>' : char;
-                tw.scrollTop = tw.scrollHeight;
-                i++;
-            } else {
-                clearInterval(typeWriterInterval);
-            }
-        }, 10); // быстрый ввод
+
+        try {
+            const r = await fetch('/generate_report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentReportData)
+            });
+            const data = await r.json();
+
+            tw.innerHTML = '';
+            let i = 0;
+            const text = data.status === 'success' ? data.report : 'Ошибка генерации отчета. Попробуйте позже.';
+            typeWriterInterval = setInterval(() => {
+                if (i < text.length) {
+                    const char = text.charAt(i);
+                    if (char === '<') {
+                        const closing = text.indexOf('>', i);
+                        if (closing !== -1) { tw.innerHTML += text.substring(i, closing + 1); i = closing + 1; }
+                        else { tw.innerHTML += '&lt;'; i++; }
+                    } else {
+                        tw.innerHTML += char === '\n' ? '<br>' : char;
+                        i++;
+                    }
+                    tw.scrollTop = tw.scrollHeight;
+                } else {
+                    clearInterval(typeWriterInterval);
+                }
+            }, 10);
+        } catch(e) {
+            tw.innerHTML = 'Ошибка. Проверьте подключение к серверу.';
+        }
     });
 
     btnClose.addEventListener('click', () => {
@@ -107,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => modal.style.display = 'none', 300); // ждем конец анимации
     });
 
-    const renderData = (val, isHistory, critiqueText, detailedText) => {
+    const renderData = (val, isHistory, reportData) => {
         // Плавное затухание текста
         resultBox.style.opacity = 0;
         trendBox.style.opacity = 0;
@@ -120,8 +138,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             resultBox.className = 'prediction-value';
             trendBox.className = 'trend-indicator';
 
-            currentDetailedText = detailedText;
+            currentReportData = reportData;
             document.getElementById('btn_detailed_analysis').style.display = 'block';
+
+            // Толтип для пояснения единиц измерения
+            resultBox.title = 'Коэффициент миграционного прироста: число приехавших минус уехавших на 10 000 жителей. (+) = приезд больше, (-) = уезд больше.';
 
             if (isHistory) {
                 const currentRegion = inputs.region_selector.value;
@@ -129,38 +150,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 trendBox.innerText = '📖 ФАКТ РОССТАТА';
                 trendBox.style.background = 'rgba(56, 189, 248, 0.2)';
                 trendBox.style.color = '#38bdf8';
-                adviceBox.innerHTML = critiqueText;
+                adviceBox.innerHTML = `<b>🔎 Факт: за ${reportData.year} год коэффициент составил ${val > 0 ? '+' : ''}${val.toFixed(2)}</b> — нажмите кнопку "Детальный отчет" для анализа от нейросети.`;
             } else {
                 if (val > 6) {
                     resultBox.classList.add('positive');
                     trendBox.innerText = '🚀 ПРОГНОЗ: Значительный приток';
                     trendBox.style.background = 'rgba(74, 222, 128, 0.2)';
                     trendBox.style.color = '#4ade80';
-                    adviceBox.innerHTML = 'Социальная инфраструктура может перегреться. <b>Совет:</b> направляйте новые кадры в строительство жилья.';
+                    adviceBox.innerHTML = 'Социальная инфраструктура может перегреться. <b>Совет:</b> направляйте новые кадры в строительство жилья. Для глубокого анализа — нажмите «Детальный отчет».';
                 } else if (val > 1) {
                     resultBox.classList.add('positive');
                     trendBox.innerText = '📊 ПРОГНОЗ: Слабый приток';
                     trendBox.style.background = 'rgba(74, 222, 128, 0.2)';
                     trendBox.style.color = '#4ade80';
-                    adviceBox.innerHTML = 'Позитивная динамика. <b>Совет:</b> постепенно стимулируйте рабочие места для поддержания тренда.';
+                    adviceBox.innerHTML = 'Позитивная динамика. Для глубокого анализа — нажмите <b>«Детальный отчет»</b>.';
                 } else if (val < -6) {
                     resultBox.classList.add('negative');
                     trendBox.innerText = '⚠️ ПРОГНОЗ: Серьезный отток';
                     trendBox.style.background = 'rgba(248, 113, 113, 0.2)';
                     trendBox.style.color = '#f87171';
-                    adviceBox.innerHTML = 'Катастрофический риск! <b>Совет:</b> необходимо увеличить дотации и снизить безработицу госпроектами.';
+                    adviceBox.innerHTML = 'Критический уровень оттока. Для глубокого анализа — нажмите <b>«Детальный отчет»</b>.';
                 } else if (val < -1) {
                     resultBox.classList.add('negative');
                     trendBox.innerText = '📉 ПРОГНОЗ: Незначительный отток';
                     trendBox.style.background = 'rgba(248, 113, 113, 0.2)';
                     trendBox.style.color = '#f87171';
-                    adviceBox.innerHTML = 'Молодежь уезжает. <b>Совет:</b> проработайте программы льготной ипотеки.';
+                    adviceBox.innerHTML = 'Умеренный отток. Для глубокого анализа — нажмите <b>«Детальный отчет»</b>.';
                 } else {
                     resultBox.classList.add('neutral');
                     trendBox.innerText = '⚖️ ПРОГНОЗ: Без изменений';
                     trendBox.style.background = 'rgba(255, 255, 255, 0.1)';
                     trendBox.style.color = '#f8fafc';
-                    adviceBox.innerHTML = 'Баланс стабилен. <b>Совет:</b> поддерживайте экономические показатели.';
+                    adviceBox.innerHTML = 'Баланс стабилен. Для глубокого анализа — нажмите <b>«Детальный отчет»</b>.';
                 }
             }
 
@@ -204,7 +225,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     inputs.subsidies.value = data.subsidies;
                     
                     updateDisplays();
-                    renderData(data.migration_rate, true, data.critique, data.detailed);
+                renderData(data.migration_rate, true, {
+                        region: regionName, year: year,
+                        grp: data.grp, income: data.income,
+                        unemployment: data.unemployment, subsidies: data.subsidies,
+                        migration_rate: data.migration_rate, mode: 'history'
+                    });
                 }
             } else {
                 // ПРОГНОЗ
@@ -223,7 +249,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 const data = await r.json();
                 if (data.status === 'success') {
-                    renderData(data.migration_rate, false, null, data.detailed);
+                    renderData(data.migration_rate, false, {
+                        region: regionName, year: year,
+                        grp: parseFloat(inputs.grp.value), income: parseFloat(inputs.income.value),
+                        unemployment: parseFloat(inputs.unemployment.value),
+                        subsidies: parseFloat(inputs.subsidies.value),
+                        migration_rate: data.migration_rate, mode: 'forecast'
+                    });
                 }
             }
         } catch(e) { console.error('Error:', e); }
