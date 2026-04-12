@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИИ Прогноз миграции</title>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="glass-container">
+        <header>
+            <h1>Аналитика Миграции <span>ИИ</span></h1>
+        </header>
+
+        <main>
+            <div class="controls-panel">
+                <div class="form-group">
+                    <label>Регион РФ</label>
+                    <select id="region_selector" placeholder="Выберите регион...">
+                        <!-- Заполняется динамически -->
+                        <option value="">Загрузка...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Год (Прошлое/Будущее) <span id="year_val" class="val-badge">2026 г.</span></label>
+                    <input type="range" id="year" min="2000" max="2035" step="1" value="2026">
+                </div>
+
+                <div class="form-group">
+                    <label>ВРП на душу населения <span id="grp_val" class="val-badge">600 т.р.</span></label>
+                    <input type="range" id="grp" min="150" max="2500" step="10" value="600">
+                </div>
+
+                <div class="form-group">
+                    <label>Средние доходы <span id="income_val" class="val-badge">300 т.р.</span></label>
+                    <input type="range" id="income" min="50" max="1500" step="10" value="300">
+                </div>
+
+                <div class="form-group">
+                    <label>Безработица (%) <span id="unemp_val" class="val-badge">5.0%</span></label>
+                    <input type="range" id="unemployment" min="1" max="15" step="0.1" value="5.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Фед. Дотации (политический фактор) <span id="subs_val" class="val-badge">40 млрд.р.</span></label>
+                    <input type="range" id="subsidies" min="0" max="150" step="1" value="40">
+                </div>
+            </div>
+
+            <div class="result-panel">
+                <div class="prediction-box">
+                    <h3>Коэффициент миграционного прироста</h3>
+                    <div class="prediction-value" id="prediction_result">
+                        0.00 <span class="unit">на 10к чел.</span>
+                    </div>
+                    <div class="trend-indicator" id="trend">Ожидание данных...</div>
+                    <div class="advice-box custom-scroll" id="advice_text">Ожидание аналитики...</div>
+                    <button id="btn_detailed_analysis" class="btn-premium" style="display:none; transition: all 0.3s ease;">✨ Детальный отчет ИИ</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Плавающий виджет чата с ИИ -->
+    <div id="chat_widget" class="chat-widget">
+        <div class="chat-header">
+            <h3>💬 ИИ-Консультант</h3>
+            <button id="btn_toggle_chat" class="btn-chat-toggle">▼</button>
+        </div>
+        <div class="chat-body" id="chat_messages">
+            <div class="chat-bubble ai-bubble">Здравствуйте! Я ваш автономный ИИ-помощник. Задайте мне вопрос по развитию региона (ВРП, безработица, дотации) и я дам экспертный совет.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat_input" placeholder="Введите ваш вопрос..." autocomplete="off">
+            <button id="btn_send_chat">➤</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ИИ-аналитики -->
+    <div id="ai_modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Расширенная Аналитика</h2>
+            <div id="modal_typewriter" class="typewriter-text"></div>
+            <button id="btn_close_modal" class="btn-close">Закрыть окно</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
