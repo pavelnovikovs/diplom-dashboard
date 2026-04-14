@@ -301,14 +301,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.innerHTML = '';
         let i = 0;
         const speed = 15; // Скорость появления букв
+
+        // Убираем лишние пустые строки: 2+ подряд \n → один \n
+        const cleanText = text.replace(/\n{2,}/g, '\n').trim();
+
         const interval = setInterval(() => {
-            if(i < text.length) {
-                const char = text.charAt(i);
+            if(i < cleanText.length) {
+                const char = cleanText.charAt(i);
                 if (char === '<') {
                     // Проглатываем HTML теги (например <b>...</b>) целиком за 1 тик
-                    const closing = text.indexOf('>', i);
+                    const closing = cleanText.indexOf('>', i);
                     if (closing !== -1) {
-                        div.innerHTML += text.substring(i, closing + 1);
+                        div.innerHTML += cleanText.substring(i, closing + 1);
                         i = closing + 1;
                     } else {
                         div.innerHTML += '&lt;';
@@ -391,6 +395,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // TomSelect вызывает 'change' на исходном select
     inputs.region_selector.addEventListener('change', handleChange);
 
-    // Стартовый пинг
-    setTimeout(handleChange, 200); // ждем загрузки get_regions
+    // Обновляем бейджи сразу — не ждём загрузки регионов
+    updateDisplays();
+
+    // Стартовый пинг (после загрузки регионов)
+    setTimeout(handleChange, 200);
 });
