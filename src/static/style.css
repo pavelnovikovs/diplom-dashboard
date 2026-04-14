@@ -520,3 +520,143 @@ input[type=range]::-webkit-slider-runnable-track {
 .btn-close:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* =============================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ============================================= */
+
+/* Планшет / широкий телефон (до 768px) */
+@media (max-width: 768px) {
+    body {
+        align-items: flex-start;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0;
+    }
+
+    .glass-container {
+        border-radius: 0;
+        padding: 20px 16px 120px; /* снизу отступ под чат */
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        box-shadow: none;
+        border: none;
+    }
+
+    header {
+        margin-bottom: 24px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+        letter-spacing: -0.5px;
+    }
+
+    /* Одна колонка вместо двух */
+    main {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        font-size: 0.9rem;
+    }
+
+    /* Крупнее ползунки для пальцев */
+    input[type=range]::-webkit-slider-thumb {
+        height: 26px;
+        width: 26px;
+        margin-top: -11px;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        height: 5px;
+    }
+
+    .prediction-box {
+        padding: 24px 16px;
+    }
+
+    .prediction-value {
+        font-size: 3rem;
+    }
+
+    .advice-box {
+        height: auto;
+        min-height: 80px;
+        max-height: 200px;
+    }
+
+    /* Чат — полная ширина внизу экрана */
+    .chat-widget {
+        width: 100%;
+        right: 0;
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
+        height: 60px; /* по умолч. свёрнут */
+    }
+
+    .chat-widget:not(.collapsed) {
+        height: 55vh;
+    }
+
+    .chat-header {
+        padding: 12px 16px;
+    }
+
+    .chat-header h3 {
+        font-size: 1rem;
+    }
+
+    .chat-bubble {
+        font-size: 0.9rem;
+    }
+
+    /* Модальное окно — на весь экран */
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        padding: 24px 16px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .modal-content h2 {
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+    }
+
+    .typewriter-text {
+        font-size: 0.9rem;
+    }
+
+    .btn-premium {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        margin-top: 16px;
+    }
+
+    /* Орбы меньше — не создают горизонтальный скролл */
+    .orb-1 { width: 200px; height: 200px; }
+    .orb-2 { width: 250px; height: 250px; }
+    .orb-3 { width: 150px; height: 150px; }
+}
+
+/* Совсем маленький телефон (до 380px) */
+@media (max-width: 380px) {
+    h1 { font-size: 1.3rem; }
+    .prediction-value { font-size: 2.4rem; }
+    .val-badge { font-size: 0.75rem; padding: 3px 8px; }
+}
